@@ -53,11 +53,12 @@ class UploadController extends Controller
      * @return
      */
     public function getFile() {
+        // lấy đuôi file để xác định kiểu file
         $this->checkExtension();
+        // lưu file đã upload vào storage
         $this->store();
         // $this->create();
-
-        return redirect()->back();
+        // return redirect()->back();
     }
 
     /**
@@ -84,11 +85,17 @@ class UploadController extends Controller
      * @return
      */
     private function store() {
+        // tải file lên
+        // lấy về
+        // đưa vào thư mục tương ứng
+        // lưu file tải lên vào Storage
+        // trả về 1 đường dẫn (path) dẫn đến file vừa được tải lên
+        // khi tải xuống, chỉ lấy đường dẫn (path) ra rồi tải về
         //store to storage/app and get path
         // $this->filePath = Storage::putFile($this->folderName, $this->uploadedFile);
 
         //store to Google Drive
-        $this->uploadedFile->storeAs('/', $this->uploadedFile->getClientOriginalName(), 'google');
+        $this->uploadedFile->storeAs('/', $this->uploadedFile->getClientOriginalName());
     }
 
     /**
