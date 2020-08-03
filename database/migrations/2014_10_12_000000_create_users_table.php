@@ -13,6 +13,7 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
+        // bảng giả định các users có trong hệ thống, bảng này sẽ dùng của cơ sở dữ liệu đã có
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');

@@ -13,10 +13,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
 
 Route::post('/get-file', 'File\UploadController@getFile')->name('get-file');
 Route::get('/download', 'File\DownloadController@showDownloadFile');
 Route::get('download/{id}', 'File\DownloadController@downloadFile');
+
+Route::get('/', 'Demo\SendReportController@displaySendReportScreen');
+
+Route::post('/send_report', 'Demo\SendReportController@sendReport')->name('send_report');

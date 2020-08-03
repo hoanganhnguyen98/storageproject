@@ -4,10 +4,9 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
-class File extends Model
+class Report extends Model
 {
-    //
     protected $fillable = [
-        'name', 'path', 'sender_id', 'getter_id'
+        'sender_id', 'title', 'sign_date', 'type'
     ];
 }

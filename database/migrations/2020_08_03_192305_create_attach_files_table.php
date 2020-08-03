@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFilesTable extends Migration
+class CreateAttachFilesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,11 @@ class CreateFilesTable extends Migration
      */
     public function up()
     {
-        Schema::create('files', function (Blueprint $table) {
+        // bảng lưu trữ các file được đính kèm khi gửi một báo cáo đi
+        Schema::create('attach_files', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('path');
-            $table->string('sender_id');
-            $table->string('getter_id');
+            $table->string('report_id'); // cho biết  file được đính kèm trong báo cáo nào?
+            $table->string('path'); // đường dẫn lưu trữ file
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ class CreateFilesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('files');
+        Schema::dropIfExists('attach_files');
     }
 }
