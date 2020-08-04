@@ -10,6 +10,7 @@ use App\Model\AttachFile;
 use App\Model\Receiver;
 use App\Model\ReplyFile;
 use App\Model\Report;
+use App\Notifications\SendMailAfterSendReport;
 
 class SendReportController extends Controller
 {
@@ -26,6 +27,8 @@ class SendReportController extends Controller
         $users = User::all();
 
         // hiển thị màn hình
+        // compact: đưa biến $users ra ngoài view
+        // -> đưa danh sách người dùng ra để chọn khi gửi báo cáo
         return view('admin.send_report', compact('users'));
     }
 
@@ -37,16 +40,17 @@ class SendReportController extends Controller
         if ($request->hasFile('sign_file') && $request->hasFile('attach_file')) {
             // lưu thông tin báo cáo
             $new_report = Report::create([
-                // 'sender_id' => Auth::user()->user_id, // lấy id của người đăng nhập
+                // 'sender_id' => Auth::user()->id, // lấy id của người đăng nhập
                 // giả sử id là 1
                 'sender_id' => 1,
+                'report_number' => $request->report_number,
                 'title' => $request->title,
                 'sign_date' => $request->sign_date,
                 'type' => $request->type,
             ]);
 
             // lưu từng người được gửi báo cáo
-            for ($i=0; $i < count($request->receiver_id); $i++) { 
+            for ($i=0; $i < count($request->receiver_id); $i++) {
                 $new_receiver = Receiver::create([
                     'receiver_id' => $request->receiver_id[$i],
                     'report_id' => $new_report->id,
@@ -67,6 +71,14 @@ class SendReportController extends Controller
                 ]);
             }
 
+            // gửi mail cho người nhận
+            for ($i=0; $i < count($request->receiver_id); $i++) {
+                // tìm người nhận theo id
+                $user = User::where('id', $request->receiver_id[$i])->first();
+                // gửi mail kèm thông tin về báo cáo
+                $user->notify(new SendMailAfterSendReport($new_report));
+            }
+
             // quay lại và thông báo thành công
             return redirect()->back()->with('success', 'Send report successfully!');
         } else {
@@ -77,6 +89,9 @@ class SendReportController extends Controller
 
     // lưu báo cáo
     public function storeReport($folderName, $uploadedFile) {
+        // $folderName: tên thư mục muốn lưu file vào
+        // $uploadedFile: file vừa upload lên, cần lưu lại
+        // --------------------------------------------------
         // lưu file vào thư mục tương ứng ở storage/app
         // trả lại đường dẫn file để lưu vào cơ sở dữ liệu
         return Storage::putFile($folderName, $uploadedFile);

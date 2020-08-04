@@ -17,6 +17,7 @@ class CreateReportsTable extends Migration
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->string('sender_id'); // người gửi là ai?
+            $table->string('report_number'); // số báo cáo
             $table->string('title'); // tiêu đề báo cáo
             $table->timestamp('sign_date'); // ngày ký
             $table->string('type'); // loại báo cáo

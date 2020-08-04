@@ -18,10 +18,20 @@ use Illuminate\Support\Facades\Route;
 // });
 
 
-Route::post('/get-file', 'File\UploadController@getFile')->name('get-file');
-Route::get('/download', 'File\DownloadController@showDownloadFile');
-Route::get('download/{id}', 'File\DownloadController@downloadFile');
+// Route::post('/get-file', 'File\UploadController@getFile')->name('get-file');
+// Route::get('/download', 'File\DownloadController@showDownloadFile');
+// Route::get('download/{id}', 'File\DownloadController@downloadFile');
 
-Route::get('/', 'Demo\SendReportController@displaySendReportScreen');
+// màn hình trang chủ
+Route::get('/', 'Demo\HomeController@displayHomeScreen');
 
-Route::post('/send_report', 'Demo\SendReportController@sendReport')->name('send_report');
+// chức năng gửi báo cáo
+Route::get('/send-report', 'Demo\SendReportController@displaySendReportScreen');
+
+// danh sách báo cáo
+Route::get('/report-list', 'Demo\ReportListController@displayReportListScreen');
+
+// báo cáo chi tiết
+Route::get('/report-detail-{report_id}', 'Demo\ReportListController@displayReportDetailScreen');
+
+Route::post('/send-report', 'Demo\SendReportController@sendReport')->name('send-report');
