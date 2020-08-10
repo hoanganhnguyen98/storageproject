@@ -11,6 +11,8 @@ use App\Model\Receiver;
 use App\Model\ReplyFile;
 use App\Model\Report;
 use App\Notifications\SendMailAfterSendReport;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class SendReportController extends Controller
 {
@@ -34,57 +36,92 @@ class SendReportController extends Controller
 
     // lấy các thông tin của báo cáo được gửi
     public function sendReport(Request $request) {
-        // dd($request->all());
+        try {
+            // tạo một bản ghi tạm thời
+            DB::beginTransaction();
 
-        // kiểm tra nếu có các file đính kèm
-        if ($request->hasFile('sign_file') && $request->hasFile('attach_file')) {
-            // lưu thông tin báo cáo
-            $new_report = Report::create([
-                // 'sender_id' => Auth::user()->id, // lấy id của người đăng nhập
-                // giả sử id là 1
-                'sender_id' => 1,
-                'report_number' => $request->report_number,
-                'title' => $request->title,
-                'sign_date' => $request->sign_date,
-                'type' => $request->type,
-            ]);
+            //-------------------------------------Phần xử lý chính-------------------------------------
 
-            // lưu từng người được gửi báo cáo
-            for ($i=0; $i < count($request->receiver_id); $i++) {
-                $new_receiver = Receiver::create([
-                    'receiver_id' => $request->receiver_id[$i],
-                    'report_id' => $new_report->id,
+            // các điều kiện đầu vào của dữ liệu
+            $rules = [
+                'report_number' => ['required'],
+                'title' => ['required'],
+                'sign_date' => ['required'],
+                'type' => ['required'],
+                'receiver_id' => ['required'],
+                'sign_file' => ['required'],
+                'attach_file' => ['required']
+            ];
+
+            // kiểm tra dữ liệu đầu vào với điều kiện ở trên
+            $validator = Validator::make($request->all(), $rules);
+
+            // nếu có lỗi thì in ra
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            // kiểm tra nếu có các file đính kèm
+            if ($request->hasFile('sign_file') && $request->hasFile('attach_file')) {
+                // lưu thông tin báo cáo
+                $new_report = Report::create([
+                    // 'sender_id' => Auth::user()->id, // lấy id của người đăng nhập
+                    // giả sử id là 1
+                    'sender_id' => 1,
+                    'report_number' => $request->report_number,
+                    'title' => $request->title,
+                    'sign_date' => $request->sign_date,
+                    'type' => $request->type,
                 ]);
-            }
 
-            // lưu file có chữ ký
-            $sign_file = AttachFile::create([
-                'report_id' => $new_report->id,
-                'path' => $this->storeReport('attach', $request->sign_file)
-            ]);
+                // lưu từng người được gửi báo cáo
+                for ($i=0; $i < count($request->receiver_id); $i++) {
+                    $new_receiver = Receiver::create([
+                        'receiver_id' => $request->receiver_id[$i],
+                        'report_id' => $new_report->id,
+                    ]);
+                }
 
-            // lưu từng file đính kèm
-            for ($i=0; $i < count($request->attach_file); $i++) { 
-                $new_attach_file = AttachFile::create([
+                // lưu file có chữ ký
+                $sign_file = AttachFile::create([
                     'report_id' => $new_report->id,
-                    'path' => $this->storeReport('attach', $request->attach_file[$i])
+                    'path' => $this->storeReport('attach', $request->sign_file)
                 ]);
-            }
 
-            // gửi mail cho người nhận
-            for ($i=0; $i < count($request->receiver_id); $i++) {
-                // tìm người nhận theo id
-                $user = User::where('id', $request->receiver_id[$i])->first();
-                // gửi mail kèm thông tin về báo cáo
-                $user->notify(new SendMailAfterSendReport($new_report));
-            }
+                // lưu từng file đính kèm
+                for ($i=0; $i < count($request->attach_file); $i++) { 
+                    $new_attach_file = AttachFile::create([
+                        'report_id' => $new_report->id,
+                        'path' => $this->storeReport('attach', $request->attach_file[$i])
+                    ]);
+                }
 
-            // quay lại và thông báo thành công
-            return redirect()->back()->with('success', 'Send report successfully!');
-        } else {
-            // nếu không có file nào, báo lỗi
-            return redirect()->back()->with('error', 'No file in report!');
-        }
+                // gửi mail cho người nhận
+                for ($i=0; $i < count($request->receiver_id); $i++) {
+                    // tìm người nhận theo id
+                    $user = User::where('id', $request->receiver_id[$i])->first();
+                    // gửi mail kèm thông tin về báo cáo
+                    $user->notify(new SendMailAfterSendReport($new_report));
+                }
+
+                //-------------------------------------Hết phần xử lý chính-------------------------------------
+
+                // nếu không có lỗi xảy ra, xác nhận các bản ghi để lưu vào database
+                DB::commit();
+
+                // quay lại và thông báo thành công
+                return redirect()->back()->with('success', 'Send report successfully!');
+            } else {
+                // nếu không có file nào, báo lỗi
+                return redirect()->back()->with('error', 'No file in report!');
+            }
+        } catch (Exception $e) {
+            // nếu có lỗi xảy ra, xóa các bản ghi vừa lưu
+            DB::rollBack();
+
+            // in ra lỗi
+            return redirect()->back()->with('error',$e->getMessage());
+        } 
     }
 
     // lưu báo cáo

@@ -8,11 +8,20 @@
     </div>
 @endif
 
-<!-- thông báo nếu có lỗi xảy ra -->
+<!-- thông báo nếu có lỗi xảy ra không liên quan đến dữ liệu đầu vào -->
 @if(Session::has('error'))
     <div class="alert alert-danger">
         {!! Session::get('error') !!}
     </div>
+@endif
+
+<!-- in ra các lỗi của Validator -->
+@if($errors->any())
+    <ul class="alert alert-danger">
+        @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
 @endif
 
 <form method="POST" action="{{ route('send-report') }}" enctype="multipart/form-data">
