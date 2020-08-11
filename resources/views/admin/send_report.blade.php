@@ -223,7 +223,13 @@
         $(".group-checkbox").prop('checked', this.checked);
 
         // hiển thị các ngân hàng khi chọn tât cả, ngược lại thì ẩn các ngân hàng
-        this.checked ? $("#bankList .bank-checkbox-div").css("display", "") : $("#bankList .bank-checkbox-div").css("display", "none");
+        this.checked
+        ?
+        $("#bankList .bank-checkbox-div").css("display", "")
+        :
+        $("#bankList .bank-checkbox-div").css("display", "none");
+        $("#bankList .bank-checkbox").prop('checked', false);
+        $("#select-all-banks").prop('checked', false);
 
         countCheckedBox();
     })
