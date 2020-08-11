@@ -10,6 +10,8 @@ use App\Model\AttachFile;
 use App\Model\Receiver;
 use App\Model\ReplyFile;
 use App\Model\Report;
+use App\Model\Group;
+use App\Model\Bank;
 use App\Notifications\SendMailAfterSendReport;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -28,10 +30,13 @@ class SendReportController extends Controller
         // lấy danh sách người dùng để hiển thị và chọn khi gửi báo cáo
         $users = User::all();
 
+        $groups = Group::all();
+        $banks = Bank::all();
+
         // hiển thị màn hình
         // compact: đưa biến $users ra ngoài view
         // -> đưa danh sách người dùng ra để chọn khi gửi báo cáo
-        return view('admin.send_report', compact('users'));
+        return view('admin.send_report', compact('users', 'banks', 'groups'));
     }
 
     // lấy các thông tin của báo cáo được gửi
