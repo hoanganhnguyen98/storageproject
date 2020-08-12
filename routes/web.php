@@ -34,4 +34,7 @@ Route::get('/report-list', 'Demo\ReportListController@displayReportListScreen');
 // báo cáo chi tiết
 Route::get('/report-detail-{report_id}', 'Demo\ReportListController@displayReportDetailScreen');
 
+// tải báo cáo
+Route::get('/download-{file_id}', 'Demo\ReportListController@downloadAttachFile');
+
 Route::post('/send-report', 'Demo\SendReportController@sendReport')->name('send-report');

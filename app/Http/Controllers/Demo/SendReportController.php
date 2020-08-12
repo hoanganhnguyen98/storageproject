@@ -41,6 +41,8 @@ class SendReportController extends Controller
 
     // lấy các thông tin của báo cáo được gửi
     public function sendReport(Request $request) {
+
+        // dd($request->all());
         try {
             // tạo một bản ghi tạm thời
             DB::beginTransaction();
@@ -53,7 +55,7 @@ class SendReportController extends Controller
                 'title' => ['required'],
                 'sign_date' => ['required'],
                 'type' => ['required'],
-                'receiver_id' => ['required'],
+                'bank' => ['required'],
                 'sign_file' => ['required'],
                 'attach_file' => ['required']
             ];
@@ -80,9 +82,9 @@ class SendReportController extends Controller
                 ]);
 
                 // lưu từng người được gửi báo cáo
-                for ($i=0; $i < count($request->receiver_id); $i++) {
+                for ($i=0; $i < count($request->bank); $i++) {
                     $new_receiver = Receiver::create([
-                        'receiver_id' => $request->receiver_id[$i],
+                        'receiver_id' => $request->bank[$i],
                         'report_id' => $new_report->id,
                     ]);
                 }
@@ -90,24 +92,28 @@ class SendReportController extends Controller
                 // lưu file có chữ ký
                 $sign_file = AttachFile::create([
                     'report_id' => $new_report->id,
-                    'path' => $this->storeReport('attach', $request->sign_file)
+                    'name' => $request->sign_file->getClientOriginalName(),
+                    'path' => $this->storeReport('attach', $request->sign_file),
+                    'type' => 'sign_file'
                 ]);
 
                 // lưu từng file đính kèm
                 for ($i=0; $i < count($request->attach_file); $i++) { 
                     $new_attach_file = AttachFile::create([
                         'report_id' => $new_report->id,
-                        'path' => $this->storeReport('attach', $request->attach_file[$i])
+                        'name' => $request->attach_file[$i]->getClientOriginalName(),
+                        'path' => $this->storeReport('attach', $request->attach_file[$i]),
+                        'type' => 'attach_file'
                     ]);
                 }
 
                 // gửi mail cho người nhận
-                for ($i=0; $i < count($request->receiver_id); $i++) {
-                    // tìm người nhận theo id
-                    $user = User::where('id', $request->receiver_id[$i])->first();
-                    // gửi mail kèm thông tin về báo cáo
-                    $user->notify(new SendMailAfterSendReport($new_report));
-                }
+                // for ($i=0; $i < count($request->receiver_id); $i++) {
+                //     // tìm người nhận theo id
+                //     $user = User::where('id', $request->receiver_id[$i])->first();
+                //     // gửi mail kèm thông tin về báo cáo
+                //     $user->notify(new SendMailAfterSendReport($new_report));
+                // }
 
                 //-------------------------------------Hết phần xử lý chính-------------------------------------
 
